@@ -3,15 +3,15 @@ services:
     image: atinoda/text-generation-webui:default-nvidia # Specify variant as the :tag
     container_name: text-generation-webui
     environment:
-      - EXTRA_LAUNCH_ARGS="--listen --verbose" # Custom launch args (e.g., --model MODEL_NAME)
+      - EXTRA_LAUNCH_ARGS="--verbose --listen --model models/zephyr-7b-beta.Q6_K.gguf --wbits 4 --auto-devices --api --extensions api" # Custom launch args (e.g., --model MODEL_NAME)
 #      - BUILD_EXTENSIONS_LIVE="coqui_tts whisper_stt" # Install named extensions during every container launch. THIS WILL SIGNIFICANLTLY SLOW LAUNCH TIME AND IS NORMALLY NOT REQUIRED.
 #      - OPENEDAI_EMBEDDING_MODEL=intfloat/e5-large-v2  # Specify custom model for embeddings
 #      - OPENEDAI_EMBEDDING_DEVICE=cuda  # Specify processing device for embeddings
     init: true  # Runs an init process (PID 1) that forwards signals and reaps processes
     ports:
       - 7860:7860  # Default web port
-#      - 5000:5000  # Default API port
-#      - 5005:5005  # Default streaming port
+      - 5000:5000  # Default API port
+      - 5005:5005  # Default streaming port
     volumes:
       - ./config/cache:/root/.cache  # WARNING: Libraries may save large files here!
       - ./config/characters:/app/characters
@@ -21,7 +21,7 @@ services:
       - ./config/presets:/app/presets
       - ./config/prompts:/app/prompts
       - ./config/training:/app/training
-#      - ./config/extensions:/app/extensions  # Persist all extensions
+      - ./config/extensions:/app/extensions  # Persist all extensions
 #      - ./config/extensions/coqui_tts:/app/extensions/coqui_tts  # Persist a single extension
     logging:
       driver:  json-file
@@ -51,8 +51,19 @@ services:
 #    ipc: host
 #    devices:
 #      - /dev/kfd
-#      - /dev/dri 
-#    cap_add: 
+#      - /dev/dri
+#    cap_add:
 #      - SYS_PTRACE
 #    security_opt:
 #      - seccomp=unconfined
+
+  # these commands worked for me with roughly 4.5GB of vram
+#CLI_ARGS=--model llama-7b-4bit --wbits 4 --listen --auto-devices
+#CLI_ARGS=--model shadow-clown-dare_Q8_0.gguf --wbits 4 --listen --auto-devices --api --n-gpu-layers 12
+#CLI_ARGS=--listen --api --model models/zephyr-7b-beta.Q6_K.gguf --n_gpu_layers 16 --wbits 4 --auto-devices --extensions api
+#CLI_ARGS=--listen --api --model models/zephyr-7b-beta.Q6_K.gguf --n_gpu_layers 32 --wbits 4 --auto-devices --extensions api --share
+#CLI_ARGS=--listen --api --model models/mistral-7b-claude-chat.Q5_K_M.gguf --n-gpu-layers 16
+#--model shadow-clown-dare_Q8_0.gguf
+#--model mbx-7b-v3.Q4_K_M
+#--model Meta-Llama-3-8B.Q5_K_M.gguf
+#--model llama-3-dare-Q8_0.gguf
